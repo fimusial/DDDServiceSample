@@ -5,12 +5,14 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddApplication()
-    .AddInfrastructure();
+    .AddInfrastructure()
+    .AddWebAPI();
 
 var app = builder.Build();
 
@@ -21,4 +23,3 @@ app.MapPost("/memo", async ([FromQuery] string content, IMediator mediator, Canc
 });
 
 app.Run();
-

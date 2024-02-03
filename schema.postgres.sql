@@ -4,7 +4,8 @@ CREATE TABLE Memo(
 
 CREATE TABLE IntegrationEventOutbox(
     id serial PRIMARY KEY,
-    eventContent VARCHAR,
+    content VARCHAR,
+    type VARCHAR,
     pushedAt TIMESTAMP);
 
 CREATE INDEX IntegrationEventOutbox_Index_PushedAt
