@@ -15,10 +15,10 @@ public class DapperPostgresMemoRepository : IRepository<Memo>
         this.npgsqlConnection = npgsqlConnection;
     }
 
-    public Task AddAsync(Memo entity, CancellationToken cancellationToken)
+    public Task<int> AddAsync(Memo entity, CancellationToken cancellationToken)
     {
-        return npgsqlConnection.ExecuteAsync(new CommandDefinition(
-            "INSERT INTO Memo(content) VALUES(@Content)",
+        return npgsqlConnection.ExecuteScalarAsync<int>(new CommandDefinition(
+            "INSERT INTO Memo(content) VALUES(@Content) RETURNING id",
             parameters: entity,
             cancellationToken: cancellationToken
             ));

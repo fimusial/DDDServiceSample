@@ -17,7 +17,7 @@ public class DapperPostgresIntegrationEventOutbox : IIntegrationEventOutbox
         this.npgsqlConnection = npgsqlConnection;
     }
 
-    public Task PushAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken)
+    public Task EnqueueAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken)
     {
         return npgsqlConnection.ExecuteAsync(new CommandDefinition(
             "INSERT INTO IntegrationEventOutbox(content, type) VALUES(@Content, @Type)",
@@ -30,7 +30,7 @@ public class DapperPostgresIntegrationEventOutbox : IIntegrationEventOutbox
             ));
     }
 
-    public async Task<IEnumerable<IntegrationEvent>> PopBatchAsync(int batchSize, CancellationToken cancellationToken)
+    public async Task<IEnumerable<IntegrationEvent>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken)
     {
         var batch = await npgsqlConnection.QueryAsync(new CommandDefinition(
             "SELECT * FROM IntegrationEventOutbox ORDER BY pushedAt LIMIT @batchSize",

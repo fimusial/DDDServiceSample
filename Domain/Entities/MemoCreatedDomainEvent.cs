@@ -1,5 +1,5 @@
 namespace Domain;
 
-public record MemoCreatedDomainEvent : IDomainEvent
+public record MemoCreatedDomainEvent(int MemoId) : IDomainEvent
 {
 }

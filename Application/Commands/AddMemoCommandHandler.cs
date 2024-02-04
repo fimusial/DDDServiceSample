@@ -21,7 +21,8 @@ public class AddMemoCommandHandler : IRequestHandler<AddMemoCommand, Unit>
     public async Task<Unit> Handle(AddMemoCommand command, CancellationToken cancellationToken)
     {
         var memo = new Memo() { Content = command.Content };
-        await memoRepository.AddAsync(memo, cancellationToken);
+        var memoId = await memoRepository.AddAsync(memo, cancellationToken);
+        memo.MemoCreated(memoId);
         await mediator.DispatchDomainEventsAsync(memo, cancellationToken);
         return Unit.Value;
     }

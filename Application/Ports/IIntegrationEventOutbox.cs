@@ -6,6 +6,6 @@ namespace Application;
 
 public interface IIntegrationEventOutbox
 {
-    Task PushAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken);
-    Task<IEnumerable<IntegrationEvent>> PopBatchAsync(int batchSize, CancellationToken cancellationToken);
+    Task EnqueueAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken);
+    Task<IEnumerable<IntegrationEvent>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken);
 }
