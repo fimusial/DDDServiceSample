@@ -6,12 +6,12 @@ using RabbitMQ.Client;
 
 namespace Infrastructure;
 
-public class RabbitMQMessageBroker : IMessageBroker
+public class RabbitMQIntegrationEventPublisher : IIntegrationEventPublisher
 {
     private readonly ConnectionFactory connectionFactory;
     private readonly RabbitMQConfiguration configuration;
 
-    public RabbitMQMessageBroker(ConnectionFactory connectionFactory, IOptions<RabbitMQConfiguration> configuration)
+    public RabbitMQIntegrationEventPublisher(ConnectionFactory connectionFactory, IOptions<RabbitMQConfiguration> configuration)
     {
         this.connectionFactory = connectionFactory;
         this.configuration = configuration.Value;
@@ -22,13 +22,13 @@ public class RabbitMQMessageBroker : IMessageBroker
         using (var connection = connectionFactory.CreateConnection())
         using (var channel = connection.CreateModel())
         {
-            channel.ExchangeDeclare(exchange: configuration.IntegrationEventsExchangeName, type: "topic");
+            channel.ExchangeDeclare(configuration.IntegrationEventsExchangeName, ExchangeType.Topic, durable: true);
 
             foreach (var integrationEvent in integrationEvents)
             {
                 channel.BasicPublish(
                     exchange: configuration.IntegrationEventsExchangeName,
-                    routingKey: integrationEvent.Type,
+                    routingKey: nameof(IntegrationEvent),
                     mandatory: true,
                     basicProperties: null,
                     body: Encoding.UTF8.GetBytes(integrationEvent.JsonSerialize()));

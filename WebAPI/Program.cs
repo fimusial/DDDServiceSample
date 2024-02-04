@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,5 +22,7 @@ app.MapPost("/memo", async ([FromQuery] string content, IMediator mediator, Canc
     await mediator.Send(new AddMemoCommand { Content = content }, cancellationToken);
     return Results.Ok();
 });
+
+app.Services.GetRequiredService<RabbitMQIntegrationEventConsumer>().Subscribe();
 
 app.Run();

@@ -26,10 +26,12 @@ public static class ServiceCollectionBuilder
                     HostName = configuration.HostName,
                     Port = configuration.Port,
                     UserName = configuration.Username,
-                    Password = configuration.Password
+                    Password = configuration.Password,
+                    DispatchConsumersAsync = true
                 };
             })
-            .AddScoped<IMessageBroker, RabbitMQMessageBroker>();
+            .AddScoped<IIntegrationEventPublisher, RabbitMQIntegrationEventPublisher>()
+            .AddSingleton<RabbitMQIntegrationEventConsumer>();
 
         return serviceCollection;
     }

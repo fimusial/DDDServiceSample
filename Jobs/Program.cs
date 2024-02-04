@@ -27,7 +27,6 @@ var builder = Host.CreateDefaultBuilder()
     })
     .Build();
 
-
 var scheduler = await builder.Services.GetRequiredService<ISchedulerFactory>().GetScheduler();
 
 await IntegrationEventOutboxProcessorJob.ScheduleSelf(

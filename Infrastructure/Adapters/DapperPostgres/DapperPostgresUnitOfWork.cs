@@ -56,5 +56,7 @@ public class DapperPostgresUnitOfWork : IUnitOfWork
 
         await npgsqlConnection.CloseAsync();
         await npgsqlConnection.DisposeAsync();
+        
+        Console.WriteLine();
     }
 }

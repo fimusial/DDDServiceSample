@@ -10,9 +10,7 @@ public class AddMemoCommandHandler : IRequestHandler<AddMemoCommand, Unit>
     private readonly IMediator mediator;
     private readonly IRepository<Memo> memoRepository;
 
-    public AddMemoCommandHandler(
-        IMediator mediator,
-        IRepository<Memo> memoRepository)
+    public AddMemoCommandHandler(IMediator mediator, IRepository<Memo> memoRepository)
     {
         this.memoRepository = memoRepository;
         this.mediator = mediator;
@@ -20,6 +18,8 @@ public class AddMemoCommandHandler : IRequestHandler<AddMemoCommand, Unit>
 
     public async Task<Unit> Handle(AddMemoCommand command, CancellationToken cancellationToken)
     {
+        System.Console.WriteLine("adding a memo!");
+
         var memo = new Memo() { Content = command.Content };
         var memoId = await memoRepository.AddAsync(memo, cancellationToken);
         memo.MemoCreated(memoId);
