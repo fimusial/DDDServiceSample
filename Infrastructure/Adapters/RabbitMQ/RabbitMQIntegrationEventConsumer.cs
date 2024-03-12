@@ -47,11 +47,15 @@ public class RabbitMQIntegrationEventConsumer : IDisposable
         {
             var message = Encoding.UTF8.GetString(eventArgs.Body.Span);
             var integrationEvent = IntegrationEvent.JsonDeserialize(message);
-            
+
             await using (var scope = serviceScopeFactory.CreateAsyncScope())
             {
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+                await unitOfWork.BeginTransactionAsync(CancellationToken.None);
                 await mediator.Publish(integrationEvent.ToNotification(), CancellationToken.None);
+                await unitOfWork.CommitTransactionAsync(CancellationToken.None);
             }
         };
 
