@@ -11,26 +11,34 @@ namespace Infrastructure;
 public class DapperPostgresIntegrationEventOutbox : IIntegrationEventOutbox
 {
     private readonly NpgsqlConnection npgsqlConnection;
+    private readonly IUnitOfWork unitOfWork;
 
-    public DapperPostgresIntegrationEventOutbox(NpgsqlConnection npgsqlConnection)
+    public DapperPostgresIntegrationEventOutbox(
+        NpgsqlConnection npgsqlConnection,
+        IUnitOfWork unitOfWork)
     {
         this.npgsqlConnection = npgsqlConnection;
+        this.unitOfWork = unitOfWork;
     }
 
     public Task EnqueueAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken)
     {
+        unitOfWork.ThrowIfNoOngoingTransaction();
+
         return npgsqlConnection.ExecuteAsync(new CommandDefinition(
             "INSERT INTO IntegrationEventOutbox(content) VALUES(@Content)",
             parameters: new
-                {
-                    Content = integrationEvent.JsonSerialize(),
-                },
+            {
+                Content = integrationEvent.JsonSerialize(),
+            },
             cancellationToken: cancellationToken
             ));
     }
 
     public async Task<IEnumerable<IntegrationEvent>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken)
     {
+        unitOfWork.ThrowIfNoOngoingTransaction();
+
         var batch = await npgsqlConnection.QueryAsync(new CommandDefinition(
             "SELECT * FROM IntegrationEventOutbox ORDER BY pushedAt LIMIT @batchSize",
             parameters: new { batchSize },
@@ -41,7 +49,7 @@ public class DapperPostgresIntegrationEventOutbox : IIntegrationEventOutbox
 
         await npgsqlConnection.ExecuteAsync(new CommandDefinition(
             "DELETE FROM IntegrationEventOutbox WHERE id = ANY(@BatchIds)",
-            parameters: new{ BatchIds = batch.Select(x => (int)x.id).ToArray() },
+            parameters: new { BatchIds = batch.Select(x => (int)x.id).ToArray() },
             cancellationToken: cancellationToken
             ));
 

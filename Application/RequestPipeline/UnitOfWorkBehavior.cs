@@ -6,7 +6,8 @@ using MediatR;
 namespace Application;
 
 public class UnitOfWorkBehavior<TRequest, TResponse>
-    : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : ICommand<TResponse>
 {
     private readonly IUnitOfWork unitOfWork;
 
