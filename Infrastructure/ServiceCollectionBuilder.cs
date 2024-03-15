@@ -2,6 +2,7 @@ using Application;
 using Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace Infrastructure;
 
@@ -11,10 +12,10 @@ public static class ServiceCollectionBuilder
     {
         serviceCollection.AddOptions<PostgresConfiguration>().BindConfiguration(nameof(PostgresConfiguration));
         serviceCollection
-            .AddScoped(serviceProvider => new Npgsql.NpgsqlConnection(serviceProvider.GetRequiredService<IOptions<PostgresConfiguration>>().Value.ConnectionString))
+            .AddScoped(serviceProvider => new NpgsqlConnection(serviceProvider.GetRequiredService<IOptions<PostgresConfiguration>>().Value.ConnectionString))
             .AddScoped<IUnitOfWork, DapperPostgresUnitOfWork>()
-            .AddScoped<IRepository<Memo>, DapperPostgresMemoRepository>()
-            .AddScoped<IIntegrationEventOutbox, DapperPostgresIntegrationEventOutbox>();
+            .AddScoped<IRepository<Memo>>(serviceProvider => UnitOfWorkSafeguard<IRepository<Memo>>.CreateProxy(new DapperPostgresMemoRepository(serviceProvider.GetRequiredService<NpgsqlConnection>()), serviceProvider.GetRequiredService<IUnitOfWork>()))
+            .AddScoped<IIntegrationEventOutbox>(serviceProvider => UnitOfWorkSafeguard<IIntegrationEventOutbox>.CreateProxy(new DapperPostgresIntegrationEventOutbox(serviceProvider.GetRequiredService<NpgsqlConnection>()), serviceProvider.GetRequiredService<IUnitOfWork>()));
 
         serviceCollection.AddOptions<RabbitMQConfiguration>().BindConfiguration(nameof(RabbitMQConfiguration));
         serviceCollection

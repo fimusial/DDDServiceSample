@@ -11,20 +11,14 @@ namespace Infrastructure;
 public class DapperPostgresIntegrationEventOutbox : IIntegrationEventOutbox
 {
     private readonly NpgsqlConnection npgsqlConnection;
-    private readonly IUnitOfWork unitOfWork;
 
-    public DapperPostgresIntegrationEventOutbox(
-        NpgsqlConnection npgsqlConnection,
-        IUnitOfWork unitOfWork)
+    public DapperPostgresIntegrationEventOutbox(NpgsqlConnection npgsqlConnection)
     {
         this.npgsqlConnection = npgsqlConnection;
-        this.unitOfWork = unitOfWork;
     }
 
     public Task EnqueueAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken)
     {
-        unitOfWork.ThrowIfNoOngoingTransaction();
-
         return npgsqlConnection.ExecuteAsync(new CommandDefinition(
             "INSERT INTO IntegrationEventOutbox(content) VALUES(@Content)",
             parameters: new
@@ -37,8 +31,6 @@ public class DapperPostgresIntegrationEventOutbox : IIntegrationEventOutbox
 
     public async Task<IEnumerable<IntegrationEvent>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken)
     {
-        unitOfWork.ThrowIfNoOngoingTransaction();
-
         var batch = await npgsqlConnection.QueryAsync(new CommandDefinition(
             "SELECT * FROM IntegrationEventOutbox ORDER BY pushedAt LIMIT @batchSize",
             parameters: new { batchSize },
