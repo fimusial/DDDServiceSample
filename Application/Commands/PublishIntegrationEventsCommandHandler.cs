@@ -18,7 +18,7 @@ public class PublishIntegrationEventsCommandHandler : IRequestHandler<PublishInt
     public async Task<Unit> Handle(PublishIntegrationEventsCommand request, CancellationToken cancellationToken)
     {
         var eventsToPublish = await outbox.DequeueBatchAsync(request.BatchSize, cancellationToken);
-        publisher.Publish(eventsToPublish);
+        publisher.PublishBatch(eventsToPublish);
         return Unit.Value;
     }
 }

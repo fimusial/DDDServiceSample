@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Application;
@@ -17,22 +18,27 @@ public class RabbitMQIntegrationEventPublisher : IIntegrationEventPublisher
         this.configuration = configuration.Value;
     }
 
-    public void Publish(IEnumerable<IntegrationEvent> integrationEvents)
+    public void PublishBatch(IEnumerable<IntegrationEvent> integrationEvents)
     {
         using (var connection = connectionFactory.CreateConnection())
         using (var channel = connection.CreateModel())
         {
             channel.ExchangeDeclare(configuration.IntegrationEventsExchangeName, ExchangeType.Topic, durable: true);
+            var batch = channel.CreateBasicPublishBatch();
 
             foreach (var integrationEvent in integrationEvents)
             {
-                channel.BasicPublish(
+                ReadOnlyMemory<byte> body = Encoding.UTF8.GetBytes(integrationEvent.JsonSerialize());
+
+                batch.Add(
                     exchange: configuration.IntegrationEventsExchangeName,
                     routingKey: nameof(IntegrationEvent),
                     mandatory: true,
-                    basicProperties: null,
-                    body: Encoding.UTF8.GetBytes(integrationEvent.JsonSerialize()));
+                    properties: null,
+                    body: body);
             }
+
+            batch.Publish();
         }
     }
 }

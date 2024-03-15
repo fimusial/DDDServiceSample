@@ -4,5 +4,5 @@ namespace Application;
 
 public interface IIntegrationEventPublisher
 {
-    void Publish(IEnumerable<IntegrationEvent> integrationEvents);
+    void PublishBatch(IEnumerable<IntegrationEvent> integrationEvents);
 }
