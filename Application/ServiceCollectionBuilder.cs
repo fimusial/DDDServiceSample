@@ -9,6 +9,7 @@ public static class ServiceCollectionBuilder
     {
         return serviceCollection
             .AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ServiceCollectionBuilder).Assembly))
-            .AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
+            .AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(DisallowHandlerNestingBehavior<,>));
     }
 }
