@@ -9,18 +9,17 @@ namespace Infrastructure;
 
 public class RabbitMQIntegrationEventPublisher : IIntegrationEventPublisher
 {
-    private readonly ConnectionFactory connectionFactory;
+    private readonly IConnection connection;
     private readonly RabbitMQConfiguration configuration;
 
-    public RabbitMQIntegrationEventPublisher(ConnectionFactory connectionFactory, IOptions<RabbitMQConfiguration> configuration)
+    public RabbitMQIntegrationEventPublisher(IConnection connection, IOptions<RabbitMQConfiguration> configuration)
     {
-        this.connectionFactory = connectionFactory;
+        this.connection = connection;
         this.configuration = configuration.Value;
     }
 
     public void PublishBatch(IEnumerable<IntegrationEvent> integrationEvents)
     {
-        using (var connection = connectionFactory.CreateConnection())
         using (var channel = connection.CreateModel())
         {
             channel.ExchangeDeclare(configuration.IntegrationEventsExchangeName, ExchangeType.Topic, durable: true);

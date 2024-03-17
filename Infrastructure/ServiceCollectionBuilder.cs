@@ -3,6 +3,7 @@ using Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using RabbitMQ.Client;
 
 namespace Infrastructure;
 
@@ -22,7 +23,7 @@ public static class ServiceCollectionBuilder
             .AddSingleton(serviceProvider =>
             {
                 var configuration = serviceProvider.GetRequiredService<IOptions<RabbitMQConfiguration>>().Value;
-                return new RabbitMQ.Client.ConnectionFactory
+                var factory = new ConnectionFactory
                 {
                     HostName = configuration.HostName,
                     Port = configuration.Port,
@@ -30,6 +31,8 @@ public static class ServiceCollectionBuilder
                     Password = configuration.Password,
                     DispatchConsumersAsync = true
                 };
+
+                return factory.CreateConnection();
             })
             .AddScoped<IIntegrationEventPublisher, RabbitMQIntegrationEventPublisher>()
             .AddSingleton<RabbitMQIntegrationEventConsumer>();

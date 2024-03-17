@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -17,6 +18,11 @@ public class MemoCreatedIntegrationEventHandler : INotificationHandler<Integrati
         IntegrationEventNotification<MemoCreatedIntegrationEvent> notification,
         CancellationToken cancellationToken)
     {
+        if (new Random().Next(0, 2) == 1)
+        {
+            throw new Exception("unexpected failure!");
+        }
+
         await mediator.Send(new AddMemoCommand { Content = "loop it!" }, cancellationToken);
     }
 }

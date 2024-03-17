@@ -7,4 +7,5 @@ public class RabbitMQConfiguration
     public required string Username { get; set; }
     public required string Password { get; set; }
     public required string IntegrationEventsExchangeName { get; set; }
+    public required string IntegrationEventsDeadLetterExchangeName { get; set; }
 }
