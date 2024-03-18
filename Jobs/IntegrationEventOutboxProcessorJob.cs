@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application;
@@ -29,10 +30,13 @@ public class IntegrationEventOutboxProcessorJob : IJob
         }
     }
 
-    public static async Task ScheduleSelf(
+    public static async Task ScheduleSelfAsync(
         IScheduler scheduler,
         IntegrationEventOutboxProcessorJobConfiguration configuration)
     {
+        ArgumentNullException.ThrowIfNull(scheduler);
+        ArgumentNullException.ThrowIfNull(configuration);
+
         var job = JobBuilder.Create<IntegrationEventOutboxProcessorJob>()
             .WithIdentity(nameof(IntegrationEventOutboxProcessorJob))
             .Build();

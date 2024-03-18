@@ -11,19 +11,19 @@ public class UnitOfWorkSafeguard<TInterface> : DispatchProxy
 
     protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
     {
-        if (Target == null)
+        if (Target is null)
         {
             throw new InvalidOperationException($"{nameof(UnitOfWorkSafeguard<TInterface>)} requires {nameof(Target)} to be set");
         }
 
-        if (UnitOfWork == null)
+        if (UnitOfWork is null)
         {
             throw new InvalidOperationException($"{nameof(UnitOfWorkSafeguard<TInterface>)} requires {nameof(UnitOfWork)} to be set");
         }
 
         if (!UnitOfWork.HasOngoingTransaction)
         {
-            if (Target.GetType().GetMethod(targetMethod!.Name)!.GetCustomAttribute<AllowWithoutTransactionAttribute>() == null)
+            if (Target.GetType().GetMethod(targetMethod!.Name)!.GetCustomAttribute<AllowWithoutTransactionAttribute>() is null)
             {
                 throw new InvalidOperationException($"operation {typeof(TInterface).Name}.{targetMethod.Name} requires {nameof(UnitOfWork.HasOngoingTransaction)} to be true");
             }
@@ -34,19 +34,12 @@ public class UnitOfWorkSafeguard<TInterface> : DispatchProxy
 
     public static TInterface CreateProxy(TInterface target, IUnitOfWork unitOfWork)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
-
-        if (unitOfWork == null)
-        {
-            throw new ArgumentNullException(nameof(unitOfWork));
-        }
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(unitOfWork);
 
         var proxy = Create<TInterface, UnitOfWorkSafeguard<TInterface>>() as UnitOfWorkSafeguard<TInterface>;
 
-        if (proxy == null)
+        if (proxy is null)
         {
             throw new InvalidOperationException($"could not create a proxy: {nameof(UnitOfWorkSafeguard<TInterface>)}");
         }

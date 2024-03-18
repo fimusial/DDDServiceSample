@@ -1,3 +1,5 @@
+namespace Jobs;
+
 public class IntegrationEventOutboxProcessorJobConfiguration
 {
     public int BatchSize { get; set; }

@@ -26,7 +26,7 @@ app.MapPost("/memo", async ([FromQuery] string content, IMediator mediator, Canc
 app.MapGet("/memo/{id}", async ([FromRoute] int id, IMediator mediator, CancellationToken cancellationToken) =>
 {
     var memo = await mediator.Send(new GetMemoQuery { Id = id }, cancellationToken);
-    return memo != null ? Results.Ok(memo) : Results.NotFound();
+    return memo is not null ? Results.Ok(memo) : Results.NotFound();
 });
 
 app.Services.GetRequiredService<RabbitMQIntegrationEventConsumer>().Subscribe();

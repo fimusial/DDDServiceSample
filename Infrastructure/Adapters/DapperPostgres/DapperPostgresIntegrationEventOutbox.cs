@@ -37,14 +37,12 @@ public class DapperPostgresIntegrationEventOutbox : IIntegrationEventOutbox
             cancellationToken: cancellationToken
         ));
 
-        var integrationEvents = batch.Select(x => (IntegrationEvent)IntegrationEvent.JsonDeserialize(x.content)).ToList();
-
         await npgsqlConnection.ExecuteAsync(new CommandDefinition(
             "DELETE FROM IntegrationEventOutbox WHERE id = ANY(@BatchIds)",
             parameters: new { BatchIds = batch.Select(x => (int)x.id).ToArray() },
             cancellationToken: cancellationToken
             ));
 
-        return integrationEvents;
+        return batch.Select(x => (IntegrationEvent)IntegrationEvent.JsonDeserialize(x.content)).ToList();
     }
 }

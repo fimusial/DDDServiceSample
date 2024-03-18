@@ -29,7 +29,7 @@ var builder = Host.CreateDefaultBuilder()
 
 var scheduler = await builder.Services.GetRequiredService<ISchedulerFactory>().GetScheduler();
 
-await IntegrationEventOutboxProcessorJob.ScheduleSelf(
+await IntegrationEventOutboxProcessorJob.ScheduleSelfAsync(
     scheduler,
     builder.Services.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value);
 
