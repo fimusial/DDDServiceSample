@@ -4,7 +4,7 @@ namespace Domain;
 
 public class Memo : Entity
 {
-    public required string Content { get; set; }
+    required public string Content { get; set; }
 
     public void MemoCreated(int id)
     {
@@ -19,6 +19,6 @@ public class Memo : Entity
         }
 
         Id = id;
-        domainEvents.Add(new MemoCreatedDomainEvent(Id));
+        DomainEvents.Add(new MemoCreatedDomainEvent(Id));
     }
 }

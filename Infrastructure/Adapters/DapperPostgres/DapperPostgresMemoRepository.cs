@@ -21,8 +21,7 @@ public class DapperPostgresMemoRepository : IRepository<Memo>
         return npgsqlConnection.ExecuteScalarAsync<int>(new CommandDefinition(
             "INSERT INTO Memo(content) VALUES(@Content) RETURNING id",
             parameters: entity,
-            cancellationToken: cancellationToken
-            ));
+            cancellationToken: cancellationToken));
     }
 
     [AllowWithoutTransaction]
@@ -31,8 +30,7 @@ public class DapperPostgresMemoRepository : IRepository<Memo>
         return npgsqlConnection.QuerySingleOrDefaultAsync<Memo>(new CommandDefinition(
             "SELECT * FROM Memo WHERE id = @id",
             parameters: new { id },
-            cancellationToken: cancellationToken
-            ));
+            cancellationToken: cancellationToken));
     }
 
     public Task UpdateAsync(Memo entity, CancellationToken cancellationToken)
@@ -40,7 +38,6 @@ public class DapperPostgresMemoRepository : IRepository<Memo>
         return npgsqlConnection.ExecuteAsync(new CommandDefinition(
             "UPDATE Memo SET content = @Content WHERE id = @Id",
             parameters: entity,
-            cancellationToken: cancellationToken
-            ));
+            cancellationToken: cancellationToken));
     }
 }

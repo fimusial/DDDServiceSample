@@ -3,5 +3,6 @@ namespace Jobs;
 public class IntegrationEventOutboxProcessorJobConfiguration
 {
     public int BatchSize { get; set; }
-    public required string CronExpression { get; set; }
+
+    required public string CronExpression { get; set; }
 }

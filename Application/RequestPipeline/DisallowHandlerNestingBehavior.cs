@@ -9,7 +9,7 @@ public class DisallowHandlerNestingBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    private bool Nested { get; set; } = false;
+    private bool Nested { get; set; }
 
     public async Task<TResponse> Handle(
         TRequest request,

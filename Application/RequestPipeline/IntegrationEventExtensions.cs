@@ -8,12 +8,16 @@ public static class IntegrationEventExtensions
     public static INotification ToNotification(this IntegrationEvent integrationEvent)
     {
         INotification? notification = null;
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             var notificationGenericType = typeof(IntegrationEventNotification<>).MakeGenericType(integrationEvent.GetType());
             notification = (INotification)Activator.CreateInstance(notificationGenericType, integrationEvent)!;
         }
-        catch(Exception) {}
+        catch (Exception)
+        {
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         if (notification is null)
         {

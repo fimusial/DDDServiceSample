@@ -6,6 +6,7 @@ public abstract class Entity
 {
     public int Id { get; set; }
 
-    protected List<IDomainEvent> domainEvents = new List<IDomainEvent>();
-    public IReadOnlyCollection<IDomainEvent> DomainEvents => domainEvents.AsReadOnly();
+    public IReadOnlyCollection<IDomainEvent> PublishedDomainEvents => DomainEvents.AsReadOnly();
+
+    protected IList<IDomainEvent> DomainEvents { get; } = new List<IDomainEvent>();
 }

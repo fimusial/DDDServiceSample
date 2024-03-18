@@ -2,5 +2,5 @@ namespace Infrastructure;
 
 public class PostgresConfiguration
 {
-    public required string ConnectionString { get; set; }
+    required public string ConnectionString { get; set; }
 }

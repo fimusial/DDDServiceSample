@@ -10,11 +10,6 @@ public abstract class IntegrationEvent
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public string JsonSerialize()
-    {
-        return JsonSerializer.Serialize<IntegrationEvent>(this);
-    }
-
     public static IntegrationEvent JsonDeserialize(string json)
     {
         var integrationEvent = JsonSerializer.Deserialize<IntegrationEvent>(json);
@@ -25,5 +20,10 @@ public abstract class IntegrationEvent
         }
 
         return integrationEvent;
+    }
+
+    public string JsonSerialize()
+    {
+        return JsonSerializer.Serialize<IntegrationEvent>(this);
     }
 }

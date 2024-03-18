@@ -19,17 +19,6 @@ public class IntegrationEventOutboxProcessorJob : IJob
         this.serviceScopeFactory = serviceScopeFactory;
     }
 
-    public async Task Execute(IJobExecutionContext context)
-    {
-        await using (var scope = serviceScopeFactory.CreateAsyncScope())
-        {
-            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            var configuration = scope.ServiceProvider.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value;
-
-            await mediator.Send(new PublishIntegrationEventsCommand { BatchSize = configuration.BatchSize }, CancellationToken.None);
-        }
-    }
-
     public static async Task ScheduleSelfAsync(
         IScheduler scheduler,
         IntegrationEventOutboxProcessorJobConfiguration configuration)
@@ -48,5 +37,16 @@ public class IntegrationEventOutboxProcessorJob : IJob
             .Build();
 
         await scheduler.ScheduleJob(job, trigger);
+    }
+
+    public async Task Execute(IJobExecutionContext context)
+    {
+        await using (var scope = serviceScopeFactory.CreateAsyncScope())
+        {
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            var configuration = scope.ServiceProvider.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value;
+
+            await mediator.Send(new PublishIntegrationEventsCommand { BatchSize = configuration.BatchSize }, CancellationToken.None);
+        }
     }
 }

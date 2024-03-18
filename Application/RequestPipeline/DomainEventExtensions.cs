@@ -9,12 +9,16 @@ public static class DomainEventExtensions
     public static INotification ToNotification(this IDomainEvent domainEvent)
     {
         INotification? notification = null;
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             var notificationGenericType = typeof(DomainEventNotification<>).MakeGenericType(domainEvent.GetType());
             notification = (INotification)Activator.CreateInstance(notificationGenericType, domainEvent)!;
         }
-        catch(Exception) {}
+        catch (Exception)
+        {
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         if (notification is null)
         {

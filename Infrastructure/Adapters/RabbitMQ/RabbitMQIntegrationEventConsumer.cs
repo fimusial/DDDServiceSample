@@ -12,13 +12,13 @@ using RabbitMQ.Client.Events;
 
 namespace Infrastructure;
 
-public class RabbitMQIntegrationEventConsumer : IDisposable
+public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 {
     private readonly RabbitMQConfiguration configuration;
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IConnection connection;
 
-    private IModel? channel = null;
+    private IModel? channel;
 
     public RabbitMQIntegrationEventConsumer(
         IOptions<RabbitMQConfiguration> configuration,
@@ -30,69 +30,6 @@ public class RabbitMQIntegrationEventConsumer : IDisposable
         this.configuration = configuration.Value;
         this.serviceScopeFactory = serviceScopeFactory;
         this.connection = connection;
-    }
-
-    private async Task OnReceivedAsync(object sender, BasicDeliverEventArgs eventArgs)
-    {
-        try
-        {
-            var message = Encoding.UTF8.GetString(eventArgs.Body.Span);
-            var integrationEvent = IntegrationEvent.JsonDeserialize(message);
-
-            await using (var scope = serviceScopeFactory.CreateAsyncScope())
-            {
-                var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-                await unitOfWork.BeginTransactionAsync(CancellationToken.None);
-                await mediator.Publish(integrationEvent.ToNotification(), CancellationToken.None);
-                await unitOfWork.CommitTransactionAsync(CancellationToken.None);
-            }
-
-            channel!.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
-        }
-        catch (Exception)
-        {
-            channel!.BasicReject(deliveryTag: eventArgs.DeliveryTag, requeue: false);
-        }
-    }
-
-    private QueueDeclareOk DeclareDeadLetterQueueAndExchange(string dlqName)
-    {
-        var exchange = configuration.IntegrationEventsDeadLetterExchangeName;
-
-        channel!.ExchangeDeclare(
-            exchange, ExchangeType.Direct, durable: true);
-
-        var queueDeclared = channel!.QueueDeclare(
-            dlqName, durable: true, exclusive: false, autoDelete: false, arguments: null);
-
-        channel!.QueueBind(
-            queueDeclared.QueueName, exchange: exchange, routingKey: "#");
-
-        return queueDeclared;
-    }
-
-    private QueueDeclareOk DeclareConsumerQueueAndExchange(string consumerName)
-    {
-        var exchange = configuration.IntegrationEventsExchangeName;
-
-        channel!.ExchangeDeclare(
-            exchange, ExchangeType.Topic, durable: true);
-
-        var args = new Dictionary<string, object>
-        {
-            { "x-dead-letter-exchange", configuration.IntegrationEventsDeadLetterExchangeName },
-            { "x-dead-letter-routing-key", "#" }
-        };
-
-        var queueDeclared = channel!.QueueDeclare(
-            consumerName, durable: true, exclusive: false, autoDelete: false, arguments: args);
-
-        channel!.QueueBind(
-            queueDeclared.QueueName, exchange: exchange, routingKey: "#");
-
-        return queueDeclared;
     }
 
     public void Subscribe()
@@ -123,5 +60,70 @@ public class RabbitMQIntegrationEventConsumer : IDisposable
         Console.WriteLine("RabbitMQIntegrationEventConsumer:Dispose");
 
         channel?.Dispose();
+    }
+
+    private async Task OnReceivedAsync(object sender, BasicDeliverEventArgs eventArgs)
+    {
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            var message = Encoding.UTF8.GetString(eventArgs.Body.Span);
+            var integrationEvent = IntegrationEvent.JsonDeserialize(message);
+
+            await using (var scope = serviceScopeFactory.CreateAsyncScope())
+            {
+                var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+                await unitOfWork.BeginTransactionAsync(CancellationToken.None);
+                await mediator.Publish(integrationEvent.ToNotification(), CancellationToken.None);
+                await unitOfWork.CommitTransactionAsync(CancellationToken.None);
+            }
+
+            channel!.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
+        }
+        catch (Exception)
+        {
+            channel!.BasicReject(deliveryTag: eventArgs.DeliveryTag, requeue: false);
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+    }
+
+    private QueueDeclareOk DeclareDeadLetterQueueAndExchange(string dlqName)
+    {
+        var exchange = configuration.IntegrationEventsDeadLetterExchangeName;
+
+        channel!.ExchangeDeclare(
+            exchange, ExchangeType.Direct, durable: true);
+
+        var queueDeclared = channel!.QueueDeclare(
+            dlqName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+
+        channel!.QueueBind(
+            queueDeclared.QueueName, exchange: exchange, routingKey: "#");
+
+        return queueDeclared;
+    }
+
+    private QueueDeclareOk DeclareConsumerQueueAndExchange(string consumerName)
+    {
+        var exchange = configuration.IntegrationEventsExchangeName;
+
+        channel!.ExchangeDeclare(
+            exchange, ExchangeType.Topic, durable: true);
+
+        var args = new Dictionary<string, object>
+        {
+            { "x-dead-letter-exchange", configuration.IntegrationEventsDeadLetterExchangeName },
+            { "x-dead-letter-routing-key", "#" },
+        };
+
+        var queueDeclared = channel!.QueueDeclare(
+            consumerName, durable: true, exclusive: false, autoDelete: false, arguments: args);
+
+        channel!.QueueBind(
+            queueDeclared.QueueName, exchange: exchange, routingKey: "#");
+
+        return queueDeclared;
     }
 }

@@ -21,7 +21,7 @@ public class MemoCreatedDomainEventHandler : INotificationHandler<DomainEventNot
         await outbox.EnqueueAsync(
             new MemoCreatedIntegrationEvent()
             {
-                MemoId = notification.DomainEvent.MemoId
+                MemoId = notification.DomainEvent.MemoId,
             },
             cancellationToken);
     }

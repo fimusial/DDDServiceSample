@@ -29,7 +29,7 @@ public static class ServiceCollectionBuilder
                     Port = configuration.Port,
                     UserName = configuration.Username,
                     Password = configuration.Password,
-                    DispatchConsumersAsync = true
+                    DispatchConsumersAsync = true,
                 };
 
                 return factory.CreateConnection();

@@ -18,7 +18,7 @@ public static class DomainEventNotificationDispatcher
 
     public static async Task DispatchDomainEventsAsync(this IMediator mediator, Entity entity, CancellationToken cancellationToken)
     {
-        foreach (var @event in entity.DomainEvents)
+        foreach (var @event in entity.PublishedDomainEvents)
         {
             await mediator.Publish(@event.ToNotification(), cancellationToken);
         }

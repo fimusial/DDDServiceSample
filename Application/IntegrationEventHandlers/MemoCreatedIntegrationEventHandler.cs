@@ -14,6 +14,8 @@ public class MemoCreatedIntegrationEventHandler : INotificationHandler<Integrati
         this.mediator = mediator;
     }
 
+    #pragma warning disable CA5394
+    #pragma warning disable CA2201
     public async Task Handle(
         IntegrationEventNotification<MemoCreatedIntegrationEvent> notification,
         CancellationToken cancellationToken)

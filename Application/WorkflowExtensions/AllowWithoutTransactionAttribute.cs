@@ -3,6 +3,6 @@ using System;
 namespace Application;
 
 [AttributeUsage(AttributeTargets.Method)]
-public class AllowWithoutTransactionAttribute : Attribute
+public sealed class AllowWithoutTransactionAttribute : Attribute
 {
 }

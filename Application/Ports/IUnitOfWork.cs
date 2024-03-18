@@ -6,7 +6,9 @@ namespace Application;
 
 public interface IUnitOfWork : IAsyncDisposable
 {
-    Task BeginTransactionAsync(CancellationToken cancellationToken);
-    Task CommitTransactionAsync(CancellationToken cancellationToken);
     bool HasOngoingTransaction { get; }
+
+    Task BeginTransactionAsync(CancellationToken cancellationToken);
+
+    Task CommitTransactionAsync(CancellationToken cancellationToken);
 }

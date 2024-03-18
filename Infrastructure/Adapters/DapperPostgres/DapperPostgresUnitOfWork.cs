@@ -9,8 +9,8 @@ namespace Infrastructure;
 
 public class DapperPostgresUnitOfWork : IUnitOfWork
 {
-    private NpgsqlTransaction? currentTransaction;
     private readonly NpgsqlConnection npgsqlConnection;
+    private NpgsqlTransaction? currentTransaction;
 
     public DapperPostgresUnitOfWork(NpgsqlConnection npgsqlConnection)
     {
@@ -56,7 +56,7 @@ public class DapperPostgresUnitOfWork : IUnitOfWork
 
         await npgsqlConnection.CloseAsync();
         await npgsqlConnection.DisposeAsync();
-        
+
         Console.WriteLine();
     }
 }
