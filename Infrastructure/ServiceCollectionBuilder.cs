@@ -16,7 +16,8 @@ public static class ServiceCollectionBuilder
             .AddScoped(serviceProvider => new NpgsqlConnection(serviceProvider.GetRequiredService<IOptions<PostgresConfiguration>>().Value.ConnectionString))
             .AddScoped<IUnitOfWork, DapperPostgresUnitOfWork>()
             .AddScoped<IRepository<Memo>>(serviceProvider => UnitOfWorkSafeguard<IRepository<Memo>>.CreateProxy(new DapperPostgresMemoRepository(serviceProvider.GetRequiredService<NpgsqlConnection>()), serviceProvider.GetRequiredService<IUnitOfWork>()))
-            .AddScoped<IIntegrationEventOutbox>(serviceProvider => UnitOfWorkSafeguard<IIntegrationEventOutbox>.CreateProxy(new DapperPostgresIntegrationEventOutbox(serviceProvider.GetRequiredService<NpgsqlConnection>()), serviceProvider.GetRequiredService<IUnitOfWork>()));
+            .AddScoped<IIntegrationEventOutbox>(serviceProvider => UnitOfWorkSafeguard<IIntegrationEventOutbox>.CreateProxy(new DapperPostgresIntegrationEventOutbox(serviceProvider.GetRequiredService<NpgsqlConnection>()), serviceProvider.GetRequiredService<IUnitOfWork>()))
+            .AddScoped<IMemoQueryService, DapperPostgresMemoQueryService>();
 
         serviceCollection.AddOptions<RabbitMQConfiguration>().BindConfiguration(nameof(RabbitMQConfiguration));
         serviceCollection

@@ -29,6 +29,12 @@ app.MapGet("/memo/{id}", async ([FromRoute] int id, IMediator mediator, Cancella
     return memo is not null ? Results.Ok(memo) : Results.NotFound();
 });
 
+app.MapGet("/memo/search", async ([FromQuery] string term, IMediator mediator, CancellationToken cancellationToken) =>
+{
+    var results = await mediator.Send(new SearchMemoContentQuery { Term = term }, cancellationToken);
+    return Results.Ok(results);
+});
+
 app.Services.GetRequiredService<RabbitMQIntegrationEventConsumer>().Subscribe();
 
 app.Run();
