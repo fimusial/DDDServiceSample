@@ -7,7 +7,7 @@ using Npgsql;
 
 namespace Infrastructure;
 
-public class DapperPostgresUnitOfWork : IUnitOfWork
+public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 {
     private readonly NpgsqlConnection npgsqlConnection;
     private NpgsqlTransaction? currentTransaction;

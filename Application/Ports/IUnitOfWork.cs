@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Application;
 
-public interface IUnitOfWork : IAsyncDisposable
+public interface IUnitOfWork
 {
     bool HasOngoingTransaction { get; }
 
