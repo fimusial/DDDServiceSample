@@ -9,7 +9,7 @@ namespace Infrastructure;
 
 public static class ServiceCollectionBuilder
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddRepositoryInfrastructure(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddOptions<PostgresConfiguration>().BindConfiguration(nameof(PostgresConfiguration));
         serviceCollection
@@ -19,6 +19,11 @@ public static class ServiceCollectionBuilder
             .AddScoped<IIntegrationEventOutbox>(serviceProvider => UnitOfWorkSafeguard<IIntegrationEventOutbox>.CreateProxy(new DapperPostgresIntegrationEventOutbox(serviceProvider.GetRequiredService<NpgsqlConnection>()), serviceProvider.GetRequiredService<IUnitOfWork>()))
             .AddScoped<IMemoQueryService, DapperPostgresMemoQueryService>();
 
+        return serviceCollection;
+    }
+
+    public static IServiceCollection AddIntegrationEventsInfrastructure(this IServiceCollection serviceCollection)
+    {
         serviceCollection.AddOptions<RabbitMQConfiguration>().BindConfiguration(nameof(RabbitMQConfiguration));
         serviceCollection
             .AddSingleton(serviceProvider =>

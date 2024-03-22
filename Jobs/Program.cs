@@ -16,7 +16,8 @@ var builder = Host.CreateDefaultBuilder()
     {
         serviceCollection
             .AddApplication()
-            .AddInfrastructure()
+            .AddRepositoryInfrastructure()
+            .AddIntegrationEventsInfrastructure()
             .AddJobs();
 
         serviceCollection.AddQuartz();
@@ -32,5 +33,7 @@ var scheduler = await builder.Services.GetRequiredService<ISchedulerFactory>().G
 await IntegrationEventOutboxProcessorJob.ScheduleSelfAsync(
     scheduler,
     builder.Services.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value);
+
+builder.Services.GetRequiredService<RabbitMQIntegrationEventConsumer>().Subscribe();
 
 await builder.RunAsync();
