@@ -3,6 +3,7 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using Application;
+using Dapper;
 using Npgsql;
 
 namespace Infrastructure;
@@ -31,6 +32,7 @@ public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 
         await npgsqlConnection.OpenAsync(cancellationToken);
         currentTransaction = await npgsqlConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        await npgsqlConnection.ExecuteAsync(new CommandDefinition("SET TRANSACTION READ WRITE", cancellationToken: cancellationToken));
     }
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken)

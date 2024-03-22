@@ -22,3 +22,6 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER IntegrationEventOutbox_OnInsert_SetPushedAt
 BEFORE INSERT ON IntegrationEventOutbox
 FOR EACH ROW EXECUTE FUNCTION setPushedAt();
+
+ALTER SYSTEM SET default_transaction_read_only TO ON;
+SELECT pg_reload_conf();
