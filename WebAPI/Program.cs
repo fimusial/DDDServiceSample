@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Threading;
 using Application;
 using Infrastructure;
@@ -5,9 +6,17 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.AddJsonConsole(formatterOptions =>
+{
+    formatterOptions.IncludeScopes = true;
+    formatterOptions.UseUtcTimestamp = true;
+    formatterOptions.JsonWriterOptions = new JsonWriterOptions { Indented = true };
+});
 
 builder.Services
     .AddApplication()
@@ -15,6 +24,8 @@ builder.Services
     .AddWebAPI();
 
 var app = builder.Build();
+
+app.UseMiddleware<OperationContextLoggerScopeMiddleware>();
 
 app.MapPost("/memo", async ([FromQuery] string content, IMediator mediator, CancellationToken cancellationToken) =>
 {

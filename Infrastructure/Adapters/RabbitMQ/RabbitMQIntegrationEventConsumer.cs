@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Application;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -14,6 +15,7 @@ namespace Infrastructure;
 
 public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 {
+    private readonly ILogger<RabbitMQIntegrationEventConsumer> logger;
     private readonly RabbitMQConfiguration configuration;
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IConnection connection;
@@ -21,12 +23,12 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
     private IModel? channel;
 
     public RabbitMQIntegrationEventConsumer(
+        ILogger<RabbitMQIntegrationEventConsumer> logger,
         IOptions<RabbitMQConfiguration> configuration,
         IServiceScopeFactory serviceScopeFactory,
         IConnection connection)
     {
-        Console.WriteLine("RabbitMQIntegrationEventConsumer:Ctor");
-
+        this.logger = logger;
         this.configuration = configuration.Value;
         this.serviceScopeFactory = serviceScopeFactory;
         this.connection = connection;
@@ -34,7 +36,7 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 
     public void Subscribe()
     {
-        Console.WriteLine("RabbitMQIntegrationEventConsumer:Subscribe");
+        logger.LogMethodRunning(nameof(Subscribe));
 
         if (channel is not null)
         {
@@ -57,7 +59,7 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 
     public void Dispose()
     {
-        Console.WriteLine("RabbitMQIntegrationEventConsumer:Dispose");
+        logger.LogMethodRunning(nameof(Dispose));
 
         channel?.Dispose();
     }
@@ -70,10 +72,11 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
             var message = Encoding.UTF8.GetString(eventArgs.Body.Span);
             var integrationEvent = IntegrationEvent.JsonDeserialize(message);
 
-            await using (var scope = serviceScopeFactory.CreateAsyncScope())
+            await using (var serviceScope = serviceScopeFactory.CreateAsyncScope())
+            using (var loggerScope = serviceScope.ServiceProvider.CreateOperationContextLoggerScope())
             {
-                var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var mediator = serviceScope.ServiceProvider.GetRequiredService<IMediator>();
+                var unitOfWork = serviceScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 await unitOfWork.BeginTransactionAsync(CancellationToken.None);
                 await mediator.Publish(integrationEvent.ToNotification(), CancellationToken.None);

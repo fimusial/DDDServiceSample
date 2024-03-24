@@ -4,18 +4,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace Infrastructure;
 
 public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 {
+    private readonly ILogger<DapperPostgresUnitOfWork> logger;
     private readonly NpgsqlConnection npgsqlConnection;
     private NpgsqlTransaction? currentTransaction;
 
-    public DapperPostgresUnitOfWork(NpgsqlConnection npgsqlConnection)
+    public DapperPostgresUnitOfWork(
+        ILogger<DapperPostgresUnitOfWork> logger,
+        NpgsqlConnection npgsqlConnection)
     {
-        Console.WriteLine("UnitOfWork:ctor");
+        this.logger = logger;
         this.npgsqlConnection = npgsqlConnection;
     }
 
@@ -23,7 +27,7 @@ public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine("UnitOfWork:BeginTransactionAsync");
+        logger.LogMethodRunning(nameof(BeginTransactionAsync));
 
         if (currentTransaction is not null)
         {
@@ -37,7 +41,7 @@ public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine("UnitOfWork:CommitTransactionAsync");
+        logger.LogMethodRunning(nameof(CommitTransactionAsync));
 
         if (currentTransaction is null)
         {
@@ -49,7 +53,7 @@ public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        Console.WriteLine("UnitOfWork:DisposeAsync");
+        logger.LogMethodRunning(nameof(DisposeAsync));
 
         if (currentTransaction is not null)
         {
@@ -58,7 +62,5 @@ public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 
         await npgsqlConnection.CloseAsync();
         await npgsqlConnection.DisposeAsync();
-
-        Console.WriteLine();
     }
 }

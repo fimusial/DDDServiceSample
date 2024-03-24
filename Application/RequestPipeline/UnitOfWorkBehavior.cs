@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -23,11 +22,9 @@ public class UnitOfWorkBehavior<TRequest, TResponse>
     {
         if (unitOfWork.HasOngoingTransaction)
         {
-            Console.WriteLine("UnitOfWorkBehavior:HasOngoingTransaction");
             return await next();
         }
 
-        Console.WriteLine("UnitOfWorkBehavior:next");
         await unitOfWork.BeginTransactionAsync(cancellationToken);
         var response = await next();
         await unitOfWork.CommitTransactionAsync(cancellationToken);

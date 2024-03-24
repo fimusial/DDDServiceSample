@@ -41,10 +41,11 @@ public class IntegrationEventOutboxProcessorJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        await using (var scope = serviceScopeFactory.CreateAsyncScope())
+        await using (var serviceScope = serviceScopeFactory.CreateAsyncScope())
+        using (var loggerScope = serviceScope.ServiceProvider.CreateOperationContextLoggerScope())
         {
-            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            var configuration = scope.ServiceProvider.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value;
+            var mediator = serviceScope.ServiceProvider.GetRequiredService<IMediator>();
+            var configuration = serviceScope.ServiceProvider.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value;
 
             await mediator.Send(new PublishIntegrationEventsCommand { BatchSize = configuration.BatchSize }, CancellationToken.None);
         }
