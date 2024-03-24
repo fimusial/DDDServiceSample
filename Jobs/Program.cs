@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Quartz;
 
 var builder = Host.CreateDefaultBuilder()
@@ -39,9 +38,7 @@ var builder = Host.CreateDefaultBuilder()
     })
     .Build();
 
-await IntegrationEventOutboxProcessorJob.ScheduleSelfAsync(
-    await builder.Services.GetRequiredService<ISchedulerFactory>().GetScheduler(),
-    builder.Services.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value);
+await builder.Services.GetRequiredService<IntegrationEventOutboxProcessorJob>().ScheduleSelfAsync();
 
 builder.Services.GetRequiredService<RabbitMQIntegrationEventConsumer>().Subscribe();
 

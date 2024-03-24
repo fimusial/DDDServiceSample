@@ -13,7 +13,9 @@ public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 {
     private readonly ILogger<DapperPostgresUnitOfWork> logger;
     private readonly NpgsqlConnection npgsqlConnection;
+
     private NpgsqlTransaction? currentTransaction;
+    private Guid? currentTransactionId;
 
     public DapperPostgresUnitOfWork(
         ILogger<DapperPostgresUnitOfWork> logger,
@@ -27,8 +29,6 @@ public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken)
     {
-        logger.LogMethodRunning(nameof(BeginTransactionAsync));
-
         if (currentTransaction is not null)
         {
             throw new InvalidOperationException("this unit of work has already initiated a transaction");
@@ -36,29 +36,32 @@ public class DapperPostgresUnitOfWork : IUnitOfWork, IAsyncDisposable
 
         await npgsqlConnection.OpenAsync(cancellationToken);
         currentTransaction = await npgsqlConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        currentTransactionId = Guid.NewGuid();
         await npgsqlConnection.ExecuteAsync(new CommandDefinition("SET TRANSACTION READ WRITE", cancellationToken: cancellationToken));
+
+        logger.LogUnitOfWorkStep(nameof(BeginTransactionAsync), currentTransactionId.ToString());
     }
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken)
     {
-        logger.LogMethodRunning(nameof(CommitTransactionAsync));
-
         if (currentTransaction is null)
         {
             throw new InvalidOperationException("cannot commit; a transaction has not been initiated");
         }
 
         await currentTransaction.CommitAsync(cancellationToken);
+
+        logger.LogUnitOfWorkStep(nameof(CommitTransactionAsync), currentTransactionId?.ToString());
     }
 
     public async ValueTask DisposeAsync()
     {
-        logger.LogMethodRunning(nameof(DisposeAsync));
-
         if (currentTransaction is not null)
         {
             await currentTransaction.DisposeAsync();
         }
+
+        logger.LogUnitOfWorkStep(nameof(DisposeAsync), currentTransactionId?.ToString());
 
         await npgsqlConnection.CloseAsync();
         await npgsqlConnection.DisposeAsync();

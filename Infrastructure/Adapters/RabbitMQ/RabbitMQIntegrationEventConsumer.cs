@@ -66,6 +66,8 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 
     private async Task OnReceivedAsync(object sender, BasicDeliverEventArgs eventArgs)
     {
+        IDisposable? loggerScope = null;
+
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
@@ -73,21 +75,26 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
             var integrationEvent = IntegrationEvent.JsonDeserialize(message);
 
             await using (var serviceScope = serviceScopeFactory.CreateAsyncScope())
-            using (var loggerScope = serviceScope.ServiceProvider.CreateOperationContextLoggerScope())
             {
+                loggerScope = serviceScope.ServiceProvider.CreateOperationContextLoggerScope();
+
                 var mediator = serviceScope.ServiceProvider.GetRequiredService<IMediator>();
                 var unitOfWork = serviceScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 await unitOfWork.BeginTransactionAsync(CancellationToken.None);
                 await mediator.Publish(integrationEvent.ToNotification(), CancellationToken.None);
                 await unitOfWork.CommitTransactionAsync(CancellationToken.None);
+
+                loggerScope.Dispose();
             }
 
             channel!.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            logger.LogException(exception);
             channel!.BasicReject(deliveryTag: eventArgs.DeliveryTag, requeue: false);
+            loggerScope?.Dispose();
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }

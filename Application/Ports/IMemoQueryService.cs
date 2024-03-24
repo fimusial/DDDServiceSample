@@ -6,5 +6,5 @@ namespace Application;
 
 public interface IMemoQueryService
 {
-  Task<IEnumerable<int>> SearchMemoContentAsync(string term, CancellationToken cancellationToken);
+    Task<IEnumerable<int>> SearchMemoContentAsync(string term, CancellationToken cancellationToken);
 }

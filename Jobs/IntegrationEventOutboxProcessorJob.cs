@@ -2,8 +2,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application;
+using Infrastructure;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
 
@@ -12,19 +14,26 @@ namespace Jobs;
 [DisallowConcurrentExecution]
 public class IntegrationEventOutboxProcessorJob : IJob
 {
+    private readonly ILogger<IntegrationEventOutboxProcessorJob> logger;
+    private readonly IntegrationEventOutboxProcessorJobConfiguration configuration;
+    private readonly ISchedulerFactory schedulerFactory;
     private readonly IServiceScopeFactory serviceScopeFactory;
 
-    public IntegrationEventOutboxProcessorJob(IServiceScopeFactory serviceScopeFactory)
+    public IntegrationEventOutboxProcessorJob(
+        ILogger<IntegrationEventOutboxProcessorJob> logger,
+        IOptions<IntegrationEventOutboxProcessorJobConfiguration> configuration,
+        ISchedulerFactory schedulerFactory,
+        IServiceScopeFactory serviceScopeFactory)
     {
+        this.logger = logger;
+        this.configuration = configuration.Value;
+        this.schedulerFactory = schedulerFactory;
         this.serviceScopeFactory = serviceScopeFactory;
     }
 
-    public static async Task ScheduleSelfAsync(
-        IScheduler scheduler,
-        IntegrationEventOutboxProcessorJobConfiguration configuration)
+    public async Task ScheduleSelfAsync()
     {
-        ArgumentNullException.ThrowIfNull(scheduler);
-        ArgumentNullException.ThrowIfNull(configuration);
+        var scheduler = await schedulerFactory.GetScheduler();
 
         var job = JobBuilder.Create<IntegrationEventOutboxProcessorJob>()
             .WithIdentity(nameof(IntegrationEventOutboxProcessorJob))
@@ -41,13 +50,28 @@ public class IntegrationEventOutboxProcessorJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        await using (var serviceScope = serviceScopeFactory.CreateAsyncScope())
-        using (var loggerScope = serviceScope.ServiceProvider.CreateOperationContextLoggerScope())
-        {
-            var mediator = serviceScope.ServiceProvider.GetRequiredService<IMediator>();
-            var configuration = serviceScope.ServiceProvider.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value;
+        IDisposable? loggerScope = null;
 
-            await mediator.Send(new PublishIntegrationEventsCommand { BatchSize = configuration.BatchSize }, CancellationToken.None);
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            await using (var serviceScope = serviceScopeFactory.CreateAsyncScope())
+            {
+                loggerScope = serviceScope.ServiceProvider.CreateOperationContextLoggerScope();
+
+                var mediator = serviceScope.ServiceProvider.GetRequiredService<IMediator>();
+                var configuration = serviceScope.ServiceProvider.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value;
+
+                await mediator.Send(new PublishIntegrationEventsCommand { BatchSize = configuration.BatchSize }, CancellationToken.None);
+
+                loggerScope.Dispose();
+            }
         }
+        catch (Exception exception)
+        {
+            logger.LogException(exception);
+            loggerScope?.Dispose();
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 }

@@ -7,10 +7,12 @@ public static class ServiceCollectionBuilder
 {
     public static IServiceCollection AddApplication(this IServiceCollection serviceCollection)
     {
-        return serviceCollection
+        serviceCollection
             .AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ServiceCollectionBuilder).Assembly))
             .AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>))
             .AddScoped(typeof(IPipelineBehavior<,>), typeof(DisallowHandlerNestingBehavior<,>))
             .AddScoped<IOperationContext, OperationContext>();
+
+        return serviceCollection;
     }
 }

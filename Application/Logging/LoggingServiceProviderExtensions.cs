@@ -15,7 +15,7 @@ public static class LoggingServiceProviderExtensions
         var logProperties = new Dictionary<string, object>
         {
             { nameof(operationContext.OperationId), operationContext.OperationId },
-            { nameof(operationContext.OperationUtcTimestamp), operationContext.OperationUtcTimestamp },
+            { nameof(operationContext.OperationUtcTimestamp), operationContext.OperationUtcTimestamp.ToString(ZuluDateTime.Format) },
         };
 
         return logger.BeginScope(logProperties) ?? throw new InvalidOperationException("could not create logger scope");
