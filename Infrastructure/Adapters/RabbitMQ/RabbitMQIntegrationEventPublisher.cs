@@ -23,6 +23,10 @@ public class RabbitMQIntegrationEventPublisher : IIntegrationEventPublisher
         using (var channel = connection.CreateModel())
         {
             channel.ExchangeDeclare(configuration.IntegrationEventsExchangeName, ExchangeType.Topic, durable: true);
+
+            var messageProperties = channel.CreateBasicProperties();
+            messageProperties.Persistent = true;
+
             var batch = channel.CreateBasicPublishBatch();
 
             foreach (var integrationEvent in integrationEvents)
@@ -33,7 +37,7 @@ public class RabbitMQIntegrationEventPublisher : IIntegrationEventPublisher
                     exchange: configuration.IntegrationEventsExchangeName,
                     routingKey: nameof(IntegrationEvent),
                     mandatory: true,
-                    properties: null,
+                    properties: messageProperties,
                     body: body);
             }
 
