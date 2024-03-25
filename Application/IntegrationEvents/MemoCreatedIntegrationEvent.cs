@@ -2,5 +2,5 @@ namespace Application;
 
 public class MemoCreatedIntegrationEvent : IntegrationEvent
 {
-    public int MemoId { get; set; }
+    public int MemoId { get; init; }
 }

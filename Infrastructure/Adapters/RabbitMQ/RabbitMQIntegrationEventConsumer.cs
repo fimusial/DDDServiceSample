@@ -76,7 +76,8 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 
             await using (var serviceScope = serviceScopeFactory.CreateAsyncScope())
             {
-                loggerScope = serviceScope.ServiceProvider.CreateOperationContextLoggerScope();
+                loggerScope = serviceScope.ServiceProvider
+                    .CreateOperationContextLoggerScope(continueWithCorrelationId: integrationEvent.CorrelationId);
 
                 var mediator = serviceScope.ServiceProvider.GetRequiredService<IMediator>();
                 var unitOfWork = serviceScope.ServiceProvider.GetRequiredService<IUnitOfWork>();

@@ -8,7 +8,9 @@ namespace Application;
 [JsonDerivedType(typeof(MemoCreatedIntegrationEvent), typeDiscriminator: nameof(MemoCreatedIntegrationEvent))]
 public abstract class IntegrationEvent
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.NewGuid();
+
+    required public Guid CorrelationId { get; init; }
 
     public static IntegrationEvent JsonDeserialize(string json)
     {

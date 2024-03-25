@@ -8,10 +8,14 @@ namespace Application;
 public class MemoCreatedDomainEventHandler : INotificationHandler<DomainEventNotification<MemoCreatedDomainEvent>>
 {
     private readonly IIntegrationEventOutbox outbox;
+    private readonly IOperationContext operationContext;
 
-    public MemoCreatedDomainEventHandler(IIntegrationEventOutbox outbox)
+    public MemoCreatedDomainEventHandler(
+        IIntegrationEventOutbox outbox,
+        IOperationContext operationContext)
     {
         this.outbox = outbox;
+        this.operationContext = operationContext;
     }
 
     public async Task Handle(
@@ -22,6 +26,7 @@ public class MemoCreatedDomainEventHandler : INotificationHandler<DomainEventNot
             new MemoCreatedIntegrationEvent()
             {
                 MemoId = notification.DomainEvent.MemoId,
+                CorrelationId = operationContext.CorrelationId,
             },
             cancellationToken);
     }
