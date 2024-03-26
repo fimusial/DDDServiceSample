@@ -4,5 +4,5 @@ namespace Application;
 
 public record AddMemoCommand : ICommand<Unit>
 {
-    required public string Content { get; set; }
+    required public string Content { get; init; }
 }

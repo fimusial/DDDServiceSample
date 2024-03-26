@@ -20,23 +20,20 @@ public class DapperPostgresIntegrationEventOutbox : IIntegrationEventOutbox
     public Task EnqueueAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken)
     {
         return npgsqlConnection.ExecuteAsync(new CommandDefinition(
-            "INSERT INTO IntegrationEventOutbox(content) VALUES(@Content)",
-            parameters: new
-            {
-                Content = integrationEvent.JsonSerialize(),
-            },
+            "INSERT INTO integration_event_outbox(content) VALUES(@Content)",
+            parameters: new { Content = integrationEvent.JsonSerialize() },
             cancellationToken: cancellationToken));
     }
 
     public async Task<IEnumerable<IntegrationEvent>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken)
     {
         var batch = await npgsqlConnection.QueryAsync(new CommandDefinition(
-            "SELECT * FROM IntegrationEventOutbox ORDER BY pushedAt LIMIT @batchSize",
+            "SELECT * FROM integration_event_outbox ORDER BY pushed_at LIMIT @batchSize",
             parameters: new { batchSize },
             cancellationToken: cancellationToken));
 
         await npgsqlConnection.ExecuteAsync(new CommandDefinition(
-            "DELETE FROM IntegrationEventOutbox WHERE id = ANY(@BatchIds)",
+            "DELETE FROM integration_event_outbox WHERE id = ANY(@BatchIds)",
             parameters: new { BatchIds = batch.Select(x => (int)x.id).ToArray() },
             cancellationToken: cancellationToken));
 

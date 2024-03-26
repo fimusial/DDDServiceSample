@@ -19,7 +19,7 @@ public class DapperPostgresMemoRepository : IRepository<Memo>
     public Task<int> AddAsync(Memo entity, CancellationToken cancellationToken)
     {
         return npgsqlConnection.ExecuteScalarAsync<int>(new CommandDefinition(
-            "INSERT INTO Memo(content) VALUES(@Content) RETURNING id",
+            "INSERT INTO memo(content) VALUES(@Content) RETURNING id",
             parameters: entity,
             cancellationToken: cancellationToken));
     }
@@ -28,7 +28,7 @@ public class DapperPostgresMemoRepository : IRepository<Memo>
     public Task<Memo?> GetAsync(int id, CancellationToken cancellationToken)
     {
         return npgsqlConnection.QuerySingleOrDefaultAsync<Memo>(new CommandDefinition(
-            "SELECT * FROM Memo WHERE id = @id",
+            "SELECT * FROM memo WHERE id = @id",
             parameters: new { id },
             cancellationToken: cancellationToken));
     }
@@ -36,7 +36,7 @@ public class DapperPostgresMemoRepository : IRepository<Memo>
     public Task UpdateAsync(Memo entity, CancellationToken cancellationToken)
     {
         return npgsqlConnection.ExecuteAsync(new CommandDefinition(
-            "UPDATE Memo SET content = @Content WHERE id = @Id",
+            "UPDATE memo SET content = @Content WHERE id = @Id",
             parameters: entity,
             cancellationToken: cancellationToken));
     }
