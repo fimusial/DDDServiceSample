@@ -16,9 +16,9 @@ public class DapperPostgresMemoQueryService : IMemoQueryService
         this.npgsqlConnection = npgsqlConnection;
     }
 
-    public async Task<IEnumerable<int>> SearchMemoContentAsync(string term, CancellationToken cancellationToken)
+    public Task<IEnumerable<int>> SearchMemoContentAsync(string term, CancellationToken cancellationToken)
     {
-        return await npgsqlConnection.QueryAsync<int>(new CommandDefinition(
+        return npgsqlConnection.QueryAsync<int>(new CommandDefinition(
             "SELECT id FROM memo WHERE LOWER(content) LIKE LOWER(@Term) ORDER BY id DESC LIMIT 5",
             parameters: new { Term = $"%{term}%" },
             cancellationToken: cancellationToken));

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application;
@@ -33,11 +34,17 @@ public class DapperPostgresMemoRepository : IRepository<Memo>
             cancellationToken: cancellationToken));
     }
 
-    public Task UpdateAsync(Memo entity, CancellationToken cancellationToken)
+    public async Task UpdateAsync(Memo entity, CancellationToken cancellationToken)
     {
-        return npgsqlConnection.ExecuteAsync(new CommandDefinition(
+        var rowsAffected = await npgsqlConnection.ExecuteAsync(new CommandDefinition(
             "UPDATE memo SET content = @Content WHERE id = @Id",
             parameters: entity,
             cancellationToken: cancellationToken));
+
+        if (rowsAffected != 1)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(DapperPostgresMemoRepository)} UPDATE statement affected {rowsAffected} rows (expected 1)");
+        }
     }
 }
