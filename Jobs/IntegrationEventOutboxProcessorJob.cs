@@ -52,7 +52,6 @@ public class IntegrationEventOutboxProcessorJob : IJob
     {
         IDisposable? loggerScope = null;
 
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             await using (var serviceScope = serviceScopeFactory.CreateAsyncScope())
@@ -71,7 +70,7 @@ public class IntegrationEventOutboxProcessorJob : IJob
         {
             logger.LogException(exception);
             loggerScope?.Dispose();
+            throw;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 }

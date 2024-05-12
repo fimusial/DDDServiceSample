@@ -68,7 +68,6 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
     {
         IDisposable? loggerScope = null;
 
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             var message = Encoding.UTF8.GetString(eventArgs.Body.Span);
@@ -96,8 +95,8 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
             logger.LogException(exception);
             channel!.BasicReject(deliveryTag: eventArgs.DeliveryTag, requeue: false);
             loggerScope?.Dispose();
+            throw;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     private QueueDeclareOk DeclareDeadLetterQueueAndExchange(string dlqName)
