@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ public class DapperPostgresMemoQueryService : IMemoQueryService
 
     public Task<IEnumerable<int>> SearchMemoContentAsync(string term, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(term, nameof(term));
+
         return npgsqlConnection.QueryAsync<int>(new CommandDefinition(
             "SELECT id FROM memo WHERE LOWER(content) LIKE LOWER(@Term) ORDER BY id DESC LIMIT 5",
             parameters: new { Term = $"%{term}%" },

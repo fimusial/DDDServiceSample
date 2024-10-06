@@ -18,12 +18,17 @@ public class SearchMemoContentQueryHandler : IRequestHandler<SearchMemoContentQu
 
     public async Task<IEnumerable<int>> Handle(SearchMemoContentQuery request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Term) || request.Term.Length > 10)
+        if (string.IsNullOrWhiteSpace(request.Term) || request.Term.Length > 256)
         {
             return Enumerable.Empty<int>();
         }
 
         var sanitizedTerm = new Regex("[^a-zA-Z0-9 ]").Replace(request.Term, string.Empty).Trim();
+
+        if (string.IsNullOrWhiteSpace(sanitizedTerm))
+        {
+            return Enumerable.Empty<int>();
+        }
 
         return await memoQueryService.SearchMemoContentAsync(sanitizedTerm, cancellationToken);
     }
