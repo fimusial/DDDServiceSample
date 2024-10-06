@@ -84,8 +84,6 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
                 await unitOfWork.BeginTransactionAsync(CancellationToken.None);
                 await mediator.Publish(integrationEvent.ToNotification(), CancellationToken.None);
                 await unitOfWork.CommitTransactionAsync(CancellationToken.None);
-
-                loggerScope.Dispose();
             }
 
             channel!.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
@@ -94,8 +92,11 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
         {
             logger.LogException(exception);
             channel!.BasicReject(deliveryTag: eventArgs.DeliveryTag, requeue: false);
-            loggerScope?.Dispose();
             throw;
+        }
+        finally
+        {
+            loggerScope?.Dispose();
         }
     }
 

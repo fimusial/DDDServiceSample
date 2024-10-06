@@ -62,15 +62,16 @@ public class IntegrationEventOutboxProcessorJob : IJob
                 var configuration = serviceScope.ServiceProvider.GetRequiredService<IOptions<IntegrationEventOutboxProcessorJobConfiguration>>().Value;
 
                 await mediator.Send(new PublishIntegrationEventsCommand { BatchSize = configuration.BatchSize }, CancellationToken.None);
-
-                loggerScope.Dispose();
             }
         }
         catch (Exception exception)
         {
             logger.LogException(exception);
-            loggerScope?.Dispose();
             throw;
+        }
+        finally
+        {
+            loggerScope?.Dispose();
         }
     }
 }
