@@ -4,10 +4,27 @@ services:
     image: postgres:16
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
-    ports:
-      - 127.0.0.1:5432:5432
-  rabbitmq:
+  broker:
     image: rabbitmq:3-management
     ports:
-      - 127.0.0.1:5672:5672
       - 127.0.0.1:15672:15672
+  webapi:
+    depends_on:
+      - db
+      - broker
+    image: ddd-sample-webapi:latest
+    ports:
+      - 127.0.0.1:7171:7171
+    environment:
+      PostgresConfiguration__ConnectionString: "Server=db:5432;Database=application;User Id=postgres;"
+  jobs:
+    depends_on:
+      - db
+      - broker
+    image: ddd-sample-jobs:latest
+    environment:
+      PostgresConfiguration__ConnectionString: "Server=db:5432;Database=application;User Id=postgres;"
+      RabbitMQConfiguration__HostName: "broker"
+      RabbitMQConfiguration__Port: 5672
+      RabbitMQConfiguration__Username: "guest"
+      RabbitMQConfiguration__Password: "guest"

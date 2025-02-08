@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.IO;
+using System.Text.Json;
 using Application;
 using Infrastructure;
 using Jobs;
@@ -20,7 +22,8 @@ var builder = Host.CreateDefaultBuilder()
     })
     .ConfigureAppConfiguration(configurationBuilder =>
     {
-        configurationBuilder.AddJsonFile("appsettings.json");
+        configurationBuilder.AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"));
+        configurationBuilder.AddEnvironmentVariables();
     })
     .ConfigureServices((_, serviceCollection) =>
     {

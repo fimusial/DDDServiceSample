@@ -1,3 +1,7 @@
+--create database application with owner postgres;
+--grant all privileges on database application to postgres;
+--\connect application;
+
 CREATE TABLE memo (
     id SERIAL PRIMARY KEY,
     content VARCHAR

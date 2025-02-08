@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using Application;
@@ -6,6 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using WebAPI;
 
@@ -17,6 +20,9 @@ builder.Logging.AddJsonConsole(formatterOptions =>
     formatterOptions.UseUtcTimestamp = true;
     formatterOptions.JsonWriterOptions = new JsonWriterOptions { Indented = true };
 });
+
+builder.Configuration.AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"));
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services
     .AddApplication()
