@@ -43,6 +43,4 @@ var builder = Host.CreateDefaultBuilder()
 
 await builder.Services.GetRequiredService<IntegrationEventOutboxProcessorJob>().ScheduleSelfAsync();
 
-builder.Services.GetRequiredService<RabbitMQIntegrationEventConsumer>().Subscribe();
-
 await builder.RunAsync();

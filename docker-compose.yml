@@ -4,6 +4,9 @@ services:
     image: postgres:16
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: application
+    volumes:
+      - ./src/db-schema.postgres.sql:/docker-entrypoint-initdb.d/init.sql
   broker:
     image: rabbitmq:3-management
     ports:
@@ -12,11 +15,16 @@ services:
     depends_on:
       - db
       - broker
+    restart: on-failure
     image: ddd-sample-webapi:latest
     ports:
       - 127.0.0.1:7171:7171
     environment:
       PostgresConfiguration__ConnectionString: "Server=db:5432;Database=application;User Id=postgres;"
+      RabbitMQConfiguration__HostName: "broker"
+      RabbitMQConfiguration__Port: 5672
+      RabbitMQConfiguration__Username: "guest"
+      RabbitMQConfiguration__Password: "guest"
   jobs:
     depends_on:
       - db

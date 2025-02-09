@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WebAPI;
 
@@ -22,11 +23,13 @@ builder.Logging.AddJsonConsole(formatterOptions =>
 });
 
 builder.Configuration.AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"));
+
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services
     .AddApplication()
     .AddRepositoryInfrastructure()
+    .AddIntegrationEventsInfrastructure()
     .AddWebAPI();
 
 var app = builder.Build();
@@ -50,5 +53,7 @@ app.MapGet("/memo/search", async ([FromQuery] string term, IMediator mediator, C
     var results = await mediator.Send(new SearchMemoContentQuery { Term = term }, cancellationToken);
     return Results.Ok(results);
 });
+
+app.Services.GetRequiredService<RabbitMQIntegrationEventConsumer>().Subscribe();
 
 app.Run();

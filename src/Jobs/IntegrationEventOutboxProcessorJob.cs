@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application;
-using Infrastructure;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -42,6 +41,7 @@ public class IntegrationEventOutboxProcessorJob : IJob
         var trigger = TriggerBuilder.Create()
             .WithIdentity($"{nameof(IntegrationEventOutboxProcessorJob)}Trigger")
             .WithCronSchedule(configuration.CronExpression)
+            .StartAt(DateTimeOffset.UtcNow.AddSeconds(configuration.StartDelaySeconds))
             .ForJob(job)
             .Build();
 
