@@ -24,14 +24,15 @@ public class RabbitMQIntegrationEventPublisher : IIntegrationEventPublisher
         {
             channel.ExchangeDeclare(configuration.IntegrationEventsExchangeName, ExchangeType.Topic, durable: true);
 
-            var messageProperties = channel.CreateBasicProperties();
-            messageProperties.Persistent = true;
-
             var batch = channel.CreateBasicPublishBatch();
-
             foreach (var integrationEvent in integrationEvents)
             {
                 ReadOnlyMemory<byte> body = Encoding.UTF8.GetBytes(integrationEvent.JsonSerialize());
+
+                var messageProperties = channel.CreateBasicProperties();
+                messageProperties.MessageId = integrationEvent.Id.ToString();
+                messageProperties.CorrelationId = integrationEvent.CorrelationId.ToString();
+                messageProperties.Persistent = true;
 
                 batch.Add(
                     exchange: configuration.IntegrationEventsExchangeName,

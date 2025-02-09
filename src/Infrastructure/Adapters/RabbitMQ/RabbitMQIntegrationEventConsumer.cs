@@ -45,6 +45,8 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 
         channel = connection.CreateModel();
 
+        // todo: generate random name suffix for the consumer (to support multiple consumers)
+        // new queue names with: DDDServiceSampleIntegrationEvents
         var consumerName = nameof(RabbitMQIntegrationEventConsumer);
         var dlqName = $"dlq.{consumerName}";
 
@@ -67,6 +69,7 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
     private async Task OnReceivedAsync(object sender, BasicDeliverEventArgs eventArgs)
     {
         IDisposable? loggerScope = null;
+        var messageId = eventArgs.BasicProperties.MessageId;
 
         try
         {
@@ -75,8 +78,8 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 
             await using (var serviceScope = serviceScopeFactory.CreateAsyncScope())
             {
-                loggerScope = serviceScope.ServiceProvider
-                    .CreateOperationContextLoggerScope(continueWithCorrelationId: integrationEvent.CorrelationId);
+                loggerScope = serviceScope.ServiceProvider.CreateOperationContextLoggerScope(integrationEvent.CorrelationId);
+                logger.LogRabbitMQIntegrationEventConsumerStep("receive", messageId);
 
                 var mediator = serviceScope.ServiceProvider.GetRequiredService<IMediator>();
                 var unitOfWork = serviceScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -87,11 +90,13 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
             }
 
             channel!.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
+            logger.LogRabbitMQIntegrationEventConsumerStep("ack", messageId);
         }
         catch (Exception exception)
         {
             logger.LogException(exception);
             channel!.BasicReject(deliveryTag: eventArgs.DeliveryTag, requeue: false);
+            logger.LogRabbitMQIntegrationEventConsumerStep("reject", messageId);
             throw;
         }
         finally

@@ -2,6 +2,8 @@ version: '3'
 services:
   db:
     image: postgres:16
+#    ports:
+#      - 127.0.0.1:5432:5432
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_DB: application
@@ -10,6 +12,7 @@ services:
   broker:
     image: rabbitmq:3-management
     ports:
+#      - 127.0.0.1:5672:5672
       - 127.0.0.1:15672:15672
   webapi:
     depends_on:
