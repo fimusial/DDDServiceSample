@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webapi
+  labels:
+    app: webapi
+spec:
+  containers:
+    - name: webapi-container
+      image: ddd-service-sample-webapi:v1
+      ports:
+        - containerPort: 7171
+      env:
+        {{- range .Values.webapi.env }}
+        - name: {{ .name }}
+          value: "{{ .value }}"
+        {{- end }}

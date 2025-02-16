@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jobs
+  labels:
+    app: jobs
+spec:
+  containers:
+    - name: jobs-container
+      image: ddd-service-sample-jobs:v1
+      env:
+        {{- range .Values.webapi.env }}
+        - name: {{ .name }}
+          value: "{{ .value }}"
+        {{- end }}

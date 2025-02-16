@@ -1,0 +1,46 @@
+postgresql:
+  auth:
+    username: ""
+    password: ""
+    database: application
+  primary:
+    pgHbaConfiguration: |-
+      local all all trust
+      host all all 0.0.0.0/0 trust
+      host all all ::/0 trust
+    initdb:
+      scripts:
+        init.sql: ""
+rabbitmq:
+  auth:
+    username: guest
+    password: guest
+  service:
+    type: NodePort
+    nodePorts:
+      manager: 31122
+webapi:
+  nodePort: 31111
+  env:
+    - name: "PostgresConfiguration__ConnectionString"
+      value: "Server=ddd-service-sample-postgresql:5432;Database=application;User Id=postgres;"
+    - name: "RabbitMQConfiguration__HostName"
+      value: "ddd-service-sample-rabbitmq"
+    - name: "RabbitMQConfiguration__Port"
+      value: "5672"
+    - name: "RabbitMQConfiguration__Username"
+      value: "guest"
+    - name: "RabbitMQConfiguration__Password"
+      value: "guest"
+jobs:
+  env:
+    - name: "PostgresConfiguration__ConnectionString"
+      value: "Server=ddd-service-sample-postgresql:5432;Database=application;User Id=postgres;"
+    - name: "RabbitMQConfiguration__HostName"
+      value: "ddd-service-sample-rabbitmq"
+    - name: "RabbitMQConfiguration__Port"
+      value: "5672"
+    - name: "RabbitMQConfiguration__Username"
+      value: "guest"
+    - name: "RabbitMQConfiguration__Password"
+      value: "guest"

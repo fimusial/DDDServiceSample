@@ -45,13 +45,8 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
 
         channel = connection.CreateModel();
 
-        // todo: generate random name suffix for the consumer (to support multiple consumers)
-        // new queue names with: DDDServiceSampleIntegrationEvents
-        var consumerName = nameof(RabbitMQIntegrationEventConsumer);
-        var dlqName = $"dlq.{consumerName}";
-
-        DeclareDeadLetterQueueAndExchange(dlqName);
-        var consumerQueueDeclared = DeclareConsumerQueueAndExchange(consumerName);
+        DeclareDeadLetterQueueAndExchange();
+        var consumerQueueDeclared = DeclareConsumerQueueAndExchange();
 
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.Received += OnReceivedAsync;
@@ -105,28 +100,29 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
         }
     }
 
-    private QueueDeclareOk DeclareDeadLetterQueueAndExchange(string dlqName)
+    private QueueDeclareOk DeclareDeadLetterQueueAndExchange()
     {
         var exchange = configuration.IntegrationEventsDeadLetterExchangeName;
 
-        channel!.ExchangeDeclare(
-            exchange, ExchangeType.Direct, durable: true);
+        channel!.ExchangeDeclare(exchange, ExchangeType.Direct, durable: true);
 
         var queueDeclared = channel!.QueueDeclare(
-            dlqName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            $"dlq.{nameof(RabbitMQIntegrationEventConsumer)}",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null);
 
-        channel!.QueueBind(
-            queueDeclared.QueueName, exchange: exchange, routingKey: "#");
+        channel!.QueueBind(queueDeclared.QueueName, exchange: exchange, routingKey: "#");
 
         return queueDeclared;
     }
 
-    private QueueDeclareOk DeclareConsumerQueueAndExchange(string consumerName)
+    private QueueDeclareOk DeclareConsumerQueueAndExchange()
     {
         var exchange = configuration.IntegrationEventsExchangeName;
 
-        channel!.ExchangeDeclare(
-            exchange, ExchangeType.Topic, durable: true);
+        channel!.ExchangeDeclare(exchange, ExchangeType.Topic, durable: true);
 
         var args = new Dictionary<string, object>
         {
@@ -135,10 +131,13 @@ public sealed class RabbitMQIntegrationEventConsumer : IDisposable
         };
 
         var queueDeclared = channel!.QueueDeclare(
-            consumerName, durable: true, exclusive: false, autoDelete: false, arguments: args);
+            nameof(RabbitMQIntegrationEventConsumer),
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: args);
 
-        channel!.QueueBind(
-            queueDeclared.QueueName, exchange: exchange, routingKey: "#");
+        channel!.QueueBind(queueDeclared.QueueName, exchange: exchange, routingKey: "#");
 
         return queueDeclared;
     }
