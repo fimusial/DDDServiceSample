@@ -35,6 +35,7 @@ builder.Services
 var app = builder.Build();
 
 app.UseMiddleware<OperationContextLoggerScopeMiddleware>();
+app.UseMiddleware<CommonHttpResponseHeadersMiddleware>();
 
 app.MapPost("/memo", async ([FromQuery] string content, IMediator mediator, CancellationToken cancellationToken) =>
 {

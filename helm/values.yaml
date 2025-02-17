@@ -32,6 +32,10 @@ webapi:
       value: "guest"
     - name: "RabbitMQConfiguration__Password"
       value: "guest"
+  waitForRabbitMQScript: |-
+    until wget -q -O /dev/stdout guest:guest@ddd-service-sample-rabbitmq:15672/api/aliveness-test/%2F;
+    do sleep 2;
+    done;
 jobs:
   env:
     - name: "PostgresConfiguration__ConnectionString"

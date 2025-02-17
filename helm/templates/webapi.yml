@@ -1,17 +1,28 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: webapi
-  labels:
-    app: webapi
+  name: webapi-deployment
 spec:
-  containers:
-    - name: webapi-container
-      image: ddd-service-sample-webapi:v1
-      ports:
-        - containerPort: 7171
-      env:
-        {{- range .Values.webapi.env }}
-        - name: {{ .name }}
-          value: "{{ .value }}"
-        {{- end }}
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapi
+  template:
+    metadata:
+      labels:
+        app: webapi
+    spec:
+      containers:
+        - name: webapi-container
+          image: ddd-service-sample-webapi:v1
+          ports:
+            - containerPort: 7171
+          env:
+            {{- range .Values.webapi.env }}
+            - name: {{ .name }}
+              value: "{{ .value }}"
+            {{- end }}
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox
+          command: ["sh", "-c", "{{ .Values.webapi.waitForRabbitMQScript }}"]
