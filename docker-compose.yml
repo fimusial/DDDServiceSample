@@ -18,7 +18,7 @@ services:
       - db
       - broker
     restart: on-failure
-    image: ddd-sample-webapi:v1
+    image: ddd-service-sample-webapi:v1
     ports:
       - 127.0.0.1:7171:7171
     environment:
@@ -31,7 +31,7 @@ services:
     depends_on:
       - db
       - broker
-    image: ddd-sample-jobs:v1
+    image: ddd-service-sample-jobs:v1
     environment:
       PostgresConfiguration__ConnectionString: "Server=db:5432;Database=application;User Id=postgres;"
       RabbitMQConfiguration__HostName: "broker"
