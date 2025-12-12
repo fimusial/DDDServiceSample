@@ -5,6 +5,7 @@ Project showcasing a simple microservice architecture oriented toward Domain Dri
 #### Prerequisites:
 - .NET >= 8.0
 - Docker (optionally with Kubernetes enabled)
+- Helm (optional)
 - PowerShell
 
 #### Building the images
