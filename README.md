@@ -1,26 +1,25 @@
 # DDD Service Sample
-Project showcasing a simple microservice architecture oriented toward Domain Driven Design, built using .NET, RabbitMQ, and PostgreSQL. It can also be used as a template for new projects.
+Project showcasing simple microservice architecture oriented toward Domain Driven Design. Built using .NET, RabbitMQ, and PostgreSQL. Containerized to run in a Kubernetes cluster. Meant to be used as a template for new projects.
 
 ## Running the sample locally
 #### Prerequisites:
 - .NET >= 8.0
 - Docker (optionally with Kubernetes enabled)
 - Helm (optional)
-- PowerShell
 
 #### Building the images
-Build the images using the PowerShell script: `./build-images.ps1`
+Build the images by running the commands in `./build-images.sh`
 
 #### Option 1 - Running as Docker containers
 Run `docker-compose up`, the API should shortly become available at `localhost:7171`
 
 #### Option 2 - Running in Kubernetes
-Run `./helm-deploy.ps1`, the API should shortly become available at `localhost:31111`
+Run the commands in `./helm-deploy.sh`, the API should shortly become available at `localhost:31111`
 
 ## API endpoints
 #### `HTTP POST /memo`
-Creates a new Memo. Accepts the following query string parameter:
-- `content` - the text content of the memo
+Creates a new text Memo. Accepts the following query string parameter:
+- `content` - the text content of the Memo
 
 ```
 > Invoke-WebRequest -Method POST -URI http://localhost:7171/memo?content=hello
@@ -31,7 +30,7 @@ Content           : {}
 ```
 
 #### `HTTP GET /memo/search`
- Searches the Memos using a term and returns their IDs. Accepts the following query string parameter:
+ Searches for Memos based on a text term and returns their IDs. Accepts the following query string parameter:
 - `term` - the term to compare against Memo content
 
 ```
@@ -43,7 +42,7 @@ Content           : [2,1]
 ```
 
 #### `HTTP GET /memo/{id}`
-Fetches the content of the memo with the ID specified in the path.
+Fetches the content of the Memo with the ID specified in the path.
 
 ```
 > Invoke-WebRequest -Method GET -URI http://localhost:7171/memo/1
@@ -54,4 +53,4 @@ Content           : "hello"
 ```
 
 ## Integration events
-Creating a Memo produces an integration event, which is first inserted into an outbox inside PostgreSQL and later published to RabbitMQ as a message. The service is also subscribed to integration events and will process them, which might result in the creation of new Memos, or if the processing fails, the message is put on a dead-letter queue.
+Creating a Memo produces an integration event, which is first inserted into an outbox inside PostgreSQL and later published to RabbitMQ as a message. The service is also subscribed to integration events and will process them, which may result in new Memos being created, or if processing fails, the message is put on a dead-letter queue.
